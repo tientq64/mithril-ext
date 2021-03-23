@@ -1,0 +1,14 @@
+{
+  "name": "mithril-ext",
+  "version": "1.0.0",
+  "description": "Extended functions for Mithril.js",
+  "main": "mithril-ext.min.js",
+  "scripts": {
+  	"build": "terser mithril-ext.js -o mithril-ext.min.js"
+  },
+  "devDependencies": {
+  	"terser": ">=5.6.1"
+  },
+  "author": "tiencoffee",
+  "license": "MIT"
+}
