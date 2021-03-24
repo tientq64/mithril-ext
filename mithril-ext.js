@@ -44,7 +44,7 @@ Object.assign(window.m, {
 		strokeWidth: true
 	},
 
-	class(classes) {
+	class(...classes) {
 		let res = []
 		for (let cls of classes) {
 			if (Array.isArray(cls)) {
@@ -64,7 +64,7 @@ Object.assign(window.m, {
 		return res.join(' ')
 	},
 
-	style(styles) {
+	style(...styles) {
 		let res = {}
 		for (let style of styles) {
 			if (Array.isArray(style)) {
