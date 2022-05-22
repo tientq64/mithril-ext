@@ -123,7 +123,7 @@ Object.assign(window.m, {
 				m.bind(this)
 				this.attrs = vnode.attrs || {}
 				if (this.attrs.children === undefined) {
-					this.attrs.children = vnode.children
+					this.attrs.children = vnode.children || []
 				}
 				if (this.oninit$$) {
 					this.oninit$$()
@@ -142,7 +142,7 @@ Object.assign(window.m, {
 				this.old$$.attrs = this.attrs
 				this.attrs = vnode.attrs || {}
 				if (this.attrs.children === undefined) {
-					this.attrs.children = vnode.children
+					this.attrs.children = vnode.children || []
 				}
 				this.onbeforeupdate$$(this.old$$)
 			},
