@@ -105,7 +105,7 @@ Object.assign(window.m, {
 		}
 		let res = await fetch(url, opts)
 		if (res.ok) {
-			res[type]()
+			return res[type]()
 		} else {
 			throw Error(`${res.statusText} '${res.url}'`)
 		}
