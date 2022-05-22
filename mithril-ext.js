@@ -1,6 +1,7 @@
 Object.assign(window.m, {
-	cssUnitless: {
+	CSS_UNITLESS: {
 		animationIterationCount: true,
+		aspectRatio: true,
 		borderImageOutset: true,
 		borderImageSlice: true,
 		borderImageWidth: true,
@@ -44,38 +45,41 @@ Object.assign(window.m, {
 		strokeWidth: true
 	},
 
-	class(...classes) {
+	NOOP() {},
+
+	class(...vals) {
 		let res = []
-		for (let cls of classes) {
-			if (Array.isArray(cls)) {
-				res.push(m.class(...cls))
+		for (let val of vals) {
+			if (Array.isArray(val)) {
+				res.push(m.class(...val))
 			}
-			else if (cls instanceof Object) {
-				for (let k in cls) {
-					if (cls[k]) {
+			else if (val instanceof Object) {
+				for (let k in val) {
+					if (val[k]) {
 						res.push(k)
 					}
 				}
 			}
 			else {
-				res.push(cls)
+				res.push(val)
 			}
 		}
 		return res.join(' ')
 	},
 
-	style(...styles) {
+	style(...vals) {
 		let res = {}
-		for (let style of styles) {
-			if (Array.isArray(style)) {
-				style = m.style(...style)
+		for (let val of vals) {
+			if (Array.isArray(val)) {
+				val = m.style(...val)
 			}
-			if (style instanceof Object) {
-				for (let k in style) {
-					let val = style[k]
-					res[k] = val
-					if (!m.cssUnitless[k] && +val) {
+			if (val instanceof Object) {
+				for (let k in val) {
+					let val2 = val[k]
+					if (!m.CSS_UNITLESS[k] && +val2) {
 						res[k] += 'px'
+					} else {
+						res[k] = val2
 					}
 				}
 			}
@@ -85,9 +89,11 @@ Object.assign(window.m, {
 
 	bind(obj, thisArg = obj, assignObj = obj) {
 		for (let k in obj) {
-			let val = obj[k]
-			if (typeof val === 'function' && val.name !== 'bound ' && val.name !== 'class ') {
-				assignObj[k] = val.bind(thisArg)
+			if (!obj.__lookupGetter__(k)) {
+				let val = obj[k]
+				if (typeof val === 'function' && val.name !== 'bound ' && val.name !== 'class ') {
+					assignObj[k] = val.bind(thisArg)
+				}
 			}
 		}
 		return assignObj
@@ -97,67 +103,64 @@ Object.assign(window.m, {
 		if (typeof opts === 'string') {
 			[opts, type] = [, opts]
 		}
-		return (await fetch(url, opts))[type]()
+		let res = await fetch(url, opts)
+		if (res.ok) {
+			res[type]()
+		} else {
+			throw Error(`${res.statusText} '${res.url}'`)
+		}
 	},
 
 	comp(props, ...statics) {
-		let comp = function() {
-			let old = {}
-			let vdom = {...props}
-			Object.assign(vdom, {
-				__oninit: vdom.oninit,
-				__oncreate: vdom.oncreate,
-				__onbeforeupdate: vdom.onbeforeupdate,
-				__onupdate: vdom.onupdate,
-				oninit(vnode) {
-					this.attrs = vnode.attrs || {}
-					this.children = vnode.children || []
-					if (this.__oninit) {
-						this.__oninit()
-					}
-					old = {
-						attrs: {...this.attrs},
-						children: [...this.children]
-					}
-					if (this.__onbeforeupdate) {
-						this.__onbeforeupdate(old, true)
-					}
-				},
-				oncreate(vnode) {
-					this.dom = vnode.dom
-					if (this.__oncreate) {
-						this.__oncreate()
-					}
-					if (this.__onupdate) {
-						this.__onupdate(true)
-					}
-				},
-				onbeforeupdate(vnode) {
-					this.attrs = vnode.attrs || {}
-					this.children = vnode.children || []
-					if (this.__onbeforeupdate) {
-						this.__onbeforeupdate(old)
-					}
-				},
-				onupdate(vnode) {
-					this.dom = vnode.dom
-					if (this.__onupdate) {
-						this.__onupdate(true)
-					}
-					old = {
-						attrs: {...this.attrs},
-						children: [...this.children],
-						dom: this.dom
-					}
+		let {oninit, oncreate, onbeforeupdate, onupdate, onremove} = props
+		let comp = Object.assign({}, props, {
+			oninit(vnode) {
+				this.oninit$$ = oninit
+				this.oncreate$$ = oncreate
+				this.onbeforeupdate$$ = onbeforeupdate || m.NOOP
+				this.onupdate$$ = onupdate || m.NOOP
+				this.onremove$$ = onremove
+				m.bind(this)
+				this.attrs = vnode.attrs || {}
+				if (this.attrs.children === undefined) {
+					this.attrs.children = vnode.children
 				}
-			})
-			return m.bind(vdom)
-		}
-		for (let stt of statics) {
-			if (stt) {
-				Object(stt, comp)
+				if (this.oninit$$) {
+					this.oninit$$()
+				}
+				this.onbeforeupdate$$(this.old$$)
+			},
+			oncreate(vnode) {
+				this.dom = vnode.dom
+				if (this.oncreate$$) {
+					this.oncreate$$()
+				}
+				this.onupdate$$(this.old$$)
+				this.old$$ = {dom: this.dom}
+			},
+			onbeforeupdate(vnode) {
+				this.old$$.attrs = this.attrs
+				this.attrs = vnode.attrs || {}
+				if (this.attrs.children === undefined) {
+					this.attrs.children = vnode.children
+				}
+				this.onbeforeupdate$$(this.old$$)
+			},
+			onupdate(vnode) {
+				this.old$$.dom = this.dom
+				this.dom = vnode.dom
+				this.onupdate$$(this.old$$)
+			},
+			onremove() {
+				if (this.onremove$$) {
+					this.onremove$$()
+				}
+				delete this.dom
 			}
+		})
+		if (statics.length) {
+			Object.assign(comp, ...statics)
 		}
-		return m.bind(comp)
+		return comp
 	}
 })
