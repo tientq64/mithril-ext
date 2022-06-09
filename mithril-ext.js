@@ -77,7 +77,7 @@ Object.assign(window.m, {
 				for (let k in val) {
 					let val2 = val[k]
 					if (!m.CSS_UNITLESS[k] && +val2) {
-						res[k] += 'px'
+						res[k] = val2 + 'px'
 					} else {
 						res[k] = val2
 					}
