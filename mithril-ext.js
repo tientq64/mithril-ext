@@ -48,7 +48,24 @@
 	const NOOP = () => {}
 	const OLD = Symbol('old')
 
+	const assignAttrs = (that, vnode) => {
+		that.attrs = {
+			key: vnode.key
+		}
+		if (vnode.attrs) {
+			for (let k in vnode.attrs) {
+				let val = vnode.attrs[k]
+				if (val !== m.DELETE) {
+					that.attrs[k] = val
+				}
+			}
+		}
+		that.children = vnode.children || []
+	}
+
 	Object.assign(window.m, {
+		DELETE: Symbol('delete'),
+
 		class(...vals) {
 			let res = []
 			for (let val of vals) {
@@ -126,11 +143,10 @@
 				onupdate = NOOP,
 				onremove = NOOP
 			} = props
-			Object.assign({}, props, {
+			return Object.assign({}, props, {
 				oninit(vnode) {
 					m.bind(this)
-					this.attrs = vnode.attrs || {}
-					this.children = vnode.children || []
+					assignAttrs(this, vnode)
 					oninit.call(this)
 					onbeforeupdate.call(this)
 				},
@@ -144,8 +160,7 @@
 					const old = this[OLD]
 					old.attrs = this.attrs
 					old.children = this.children
-					this.attrs = vnode.attrs || {}
-					this.children = vnode.children || []
+					assignAttrs(this, vnode)
 					onbeforeupdate.call(this, old)
 				},
 				onupdate(vnode) {

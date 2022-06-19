@@ -1710,9 +1710,13 @@
 	"select_project":
 	{
 		"height": 500.0,
-		"last_filter": "mith",
+		"last_filter": "mithri",
 		"selected_items":
 		[
+			[
+				"mithri",
+				"F:\\npm\\mithril-ext\\_.sublime-project"
+			],
 			[
 				"mith",
 				"F:\\npm\\mithril-ext\\_.sublime-project"
