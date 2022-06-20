@@ -49,18 +49,31 @@
 	const OLD = Symbol('old')
 
 	const assignAttrs = (that, vnode) => {
-		that.attrs = {
-			key: vnode.key
-		}
-		if (vnode.attrs) {
-			for (let k in vnode.attrs) {
-				let val = vnode.attrs[k]
+		that.attrs = {}
+		let {attrs} = vnode
+		if (attrs) {
+			let attrs2
+			for (let k in attrs) {
+				let val = attrs[k]
 				if (val !== m.DELETE) {
-					that.attrs[k] = val
+					if (k === 'attrs') {
+						attrs2 = val
+						delete attrs[k]
+					} else {
+						that.attrs[k] = val
+					}
+				}
+			}
+			if (attrs2) {
+				for (let k of attrs2) {
+					if (!(k in that.attrs)) {
+						that.attrs[k] = attrs2[k]
+					}
 				}
 			}
 		}
 		that.children = vnode.children || []
+		that.key = vnode.key
 	}
 
 	Object.assign(window.m, {
