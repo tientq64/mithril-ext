@@ -65,7 +65,7 @@
 				}
 			}
 			if (attrs2) {
-				for (let k of attrs2) {
+				for (let k in attrs2) {
 					if (!(k in that.attrs)) {
 						that.attrs[k] = attrs2[k]
 					}
