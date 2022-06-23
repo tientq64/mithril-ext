@@ -137,8 +137,11 @@
 			}
 			let res = await fetch(url, opts)
 			if (res.ok) {
-				res = await res[type]()
-				if ((type === "yaml" || type === "yml") && window.jsyaml) {
+				if (type === "yml")
+					type = "yaml"
+				let resType = type === "yaml" ? "text" : type
+				res = await res[resType]()
+				if (type === "yaml" && window.jsyaml) {
 					return jsyaml.safeLoad(res)
 				} else {
 					return res
