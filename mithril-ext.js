@@ -52,9 +52,9 @@
 		that.attrs = {}
 		let {attrs} = vnode
 		if (attrs) {
-			let attrs2
+			let attrs2, val
 			for (let k in attrs) {
-				let val = attrs[k]
+				val = attrs[k]
 				if (val !== m.DELETE) {
 					if (k === 'attrs') {
 						attrs2 = val
@@ -151,8 +151,21 @@
 			}
 		},
 
+		css(...args) {
+			let sheet = j2c.sheet({
+				"@global": args
+			})
+			stylEl.textContent += sheet
+		},
+
+		sheet(...args) {
+			let sheet = j2c.sheet(...args)
+			stylEl.textContent += sheet
+			return sheet
+		},
+
 		comp(props) {
-			let {
+			const {
 				oninit = NOOP,
 				oncreate = NOOP,
 				onbeforeupdate = NOOP,
