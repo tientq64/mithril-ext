@@ -1,9 +1,0 @@
-{
-	"folders": [{
-		"path": "."
-	}],
-	"build_systems": [{
-		"name": "Build",
-		"shell_cmd": "npm run build"
-	}]
-}

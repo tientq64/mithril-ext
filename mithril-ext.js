@@ -1,208 +1,198 @@
-(function() {
-	const CSS_UNITLESS = {
-		animationIterationCount: true,
-		aspectRatio: true,
-		borderImageOutset: true,
-		borderImageSlice: true,
-		borderImageWidth: true,
-		boxFlex: true,
-		boxFlexGroup: true,
-		boxOrdinalGroup: true,
-		columnCount: true,
-		columns: true,
-		flex: true,
-		flexGrow: true,
-		flexPositive: true,
-		flexShrink: true,
-		flexNegative: true,
-		flexOrder: true,
-		gridArea: true,
-		gridRow: true,
-		gridRowEnd: true,
-		gridRowSpan: true,
-		gridRowStart: true,
-		gridColumn: true,
-		gridColumnEnd: true,
-		gridColumnSpan: true,
-		gridColumnStart: true,
-		fontWeight: true,
-		lineClamp: true,
-		lineHeight: true,
-		opacity: true,
-		order: true,
-		orphans: true,
-		tabSize: true,
-		widows: true,
-		zIndex: true,
-		zoom: true,
-		fillOpacity: true,
-		floodOpacity: true,
-		stopOpacity: true,
-		strokeDasharray: true,
-		strokeDashoffset: true,
-		strokeMiterlimit: true,
-		strokeOpacity: true,
-		strokeWidth: true
-	}
+(function () {
+    var cssUnitless = new Set([
+        "animationIterationCount",
+        "aspectRatio",
+        "borderImageOutset",
+        "borderImageSlice",
+        "borderImageWidth",
+        "boxFlex",
+        "boxFlexGroup",
+        "boxOrdinalGroup",
+        "columnCount",
+        "columns",
+        "flex",
+        "flexGrow",
+        "flexPositive",
+        "flexShrink",
+        "flexNegative",
+        "flexOrder",
+        "gridArea",
+        "gridRow",
+        "gridRowEnd",
+        "gridRowSpan",
+        "gridRowStart",
+        "gridColumn",
+        "gridColumnEnd",
+        "gridColumnSpan",
+        "gridColumnStart",
+        "fontWeight",
+        "lineClamp",
+        "lineHeight",
+        "opacity",
+        "order",
+        "orphans",
+        "scale",
+        "tabSize",
+        "widows",
+        "zIndex",
+        "zoom",
+        "fillOpacity",
+        "floodOpacity",
+        "stopOpacity",
+        "strokeDasharray",
+        "strokeDashoffset",
+        "strokeMiterlimit",
+        "strokeOpacity",
+        "strokeWidth",
+        "webkitLineClamp"
+    ]);
 
-	const NOOP = () => {}
-	const OLD = Symbol('old')
+    var NOOP = () => { };
+    var OLD = Symbol("OLD");
 
-	const assignAttrs = (that, vnode) => {
-		that.attrs = {}
-		let {attrs} = vnode
-		if (attrs) {
-			let attrs2, val
-			for (let k in attrs) {
-				val = attrs[k]
-				if (val !== m.DELETE) {
-					if (k === 'attrs') {
-						attrs2 = val
-						delete attrs[k]
-					} else {
-						that.attrs[k] = val
-					}
-				}
-			}
-			if (attrs2) {
-				for (let k in attrs2) {
-					if (!(k in that.attrs)) {
-						that.attrs[k] = attrs2[k]
-					}
-				}
-			}
-		}
-		that.children = vnode.children || []
-		that.key = vnode.key
-	}
+    var assignAttrs = (that, vnode) => {
+        var attrs, attrs2, k, val;
+        that.attrs = {};
+        attrs = vnode.attrs;
+        if (attrs) {
+            for (k in attrs) {
+                val = attrs[k];
+                if (val === m.DELETE) continue;
+                if (k === "attrs") {
+                    attrs2 = val;
+                    delete attrs[k];
+                } else {
+                    that.attrs[k] = val;
+                }
+            }
+            if (attrs2) {
+                for (k in attrs2) {
+                    val = attrs2[k];
+                    if (val === m.DELETE || Object.hasOwn(k)) continue;
+                    that.attrs[k] = val;
+                }
+            }
+        }
+        that.children = vnode.children || [];
+        that.key = vnode.key;
+    };
 
-	Object.assign(window.m, {
-		DELETE: Symbol('delete'),
+    Object.assign(window.m, {
+        DELETE: Symbol("DELETE"),
 
-		class(...vals) {
-			let res = []
-			for (let val of vals) {
-				if (Array.isArray(val)) {
-					res.push(m.class(...val))
-				}
-				else if (val instanceof Object) {
-					for (let k in val) {
-						if (val[k]) {
-							res.push(k)
-						}
-					}
-				}
-				else {
-					res.push(val)
-				}
-			}
-			return res.join(' ')
-		},
+        class(...vals) {
+            var res, val, k;
+            res = [];
+            for (val of vals) {
+                if (Array.isArray(val)) {
+                    res.push(m.class(...val));
+                }
+                else if (val instanceof Object) {
+                    for (k in val) {
+                        if (val[k]) {
+                            res.push(k);
+                        }
+                    }
+                }
+                else {
+                    res.push(val);
+                }
+            }
+            return res.join(" ");
+        },
 
-		style(...vals) {
-			let res = {}
-			for (let val of vals) {
-				if (Array.isArray(val)) {
-					val = m.style(...val)
-				}
-				if (val instanceof Object) {
-					for (let k in val) {
-						let val2 = val[k]
-						if (!CSS_UNITLESS[k] && +val2) {
-							res[k] = val2 + 'px'
-						} else {
-							res[k] = val2
-						}
-					}
-				}
-			}
-			return res
-		},
+        style(...vals) {
+            var res, val, k, val2;
+            res = {};
+            for (val of vals) {
+                if (Array.isArray(val)) {
+                    val = m.style(...val);
+                }
+                if (val instanceof Object) {
+                    for (k in val) {
+                        val2 = val[k];
+                        if (cssUnitless.has(k) || k.startsWith("--") || isNaN(val2)) {
+                            res[k] = val2;
+                        } else {
+                            res[k] = val2 + "px";
+                        }
+                    }
+                }
+            }
+            return res;
+        },
 
-		bind(obj, thisArg = obj, assignObj = obj) {
-			for (let k in obj) {
-				if (!obj.__lookupGetter__(k)) {
-					let val = obj[k]
-					if (typeof val === 'function' && val.name !== 'bound ' && val.name !== 'class ') {
-						assignObj[k] = val.bind(thisArg)
-					}
-				}
-			}
-			return assignObj
-		},
+        bind(obj, thisArg = obj, assignObj = obj) {
+            var k, val;
+            for (k in obj) {
+                if (obj.__lookupGetter__(k)) continue;
+                val = obj[k];
+                if (typeof val !== "function" || val.name === "bound " || val.name === "class ") continue;
+                assignObj[k] = val.bind(thisArg);
+            }
+            return assignObj;
+        },
 
-		async fetch(url, opts, type = 'text') {
-			if (typeof opts === 'string') {
-				[opts, type] = [, opts]
-			}
-			let res = await fetch(url, opts)
-			if (res.ok) {
-				if (type === "yml")
-					type = "yaml"
-				let resType = type === "yaml" ? "text" : type
-				res = await res[resType]()
-				if (type === "yaml" && window.jsyaml) {
-					return jsyaml.safeLoad(res)
-				} else {
-					return res
-				}
-			} else {
-				throw Error(`${res.statusText} '${res.url}'`)
-			}
-		},
+        async fetch(url, opts, type = "text") {
+            var res, resType;
+            if (typeof opts === "string") {
+                [opts, type] = [, opts];
+            }
+            res = await fetch(url, opts);
+            if (!res.ok) {
+                throw Error(`${res.statusText}: ${res.url}`);
+            }
+            if (type === "yml") {
+                type = "yaml";
+            }
+            resType = type === "yaml" ? "text" : type;
+            res = await res[resType]();
+            if (type === "yaml" && window.jsyaml) {
+                return jsyaml.safeLoad(res);
+            }
+            return res;
+        },
 
-		css(...args) {
-			let sheet = j2c.sheet({
-				"@global": args
-			})
-			stylEl.textContent += sheet
-		},
-
-		sheet(...args) {
-			let sheet = j2c.sheet(...args)
-			stylEl.textContent += sheet
-			return sheet
-		},
-
-		comp(props) {
-			const {
-				oninit = NOOP,
-				oncreate = NOOP,
-				onbeforeupdate = NOOP,
-				onupdate = NOOP,
-				onremove = NOOP
-			} = props
-			return Object.assign({}, props, {
-				oninit(vnode) {
-					m.bind(this)
-					assignAttrs(this, vnode)
-					oninit.call(this)
-					onbeforeupdate.call(this)
-				},
-				oncreate(vnode) {
-					this.dom = vnode.dom
-					oncreate.call(this)
-					onupdate.call(this)
-					this[OLD] = {dom: this.dom}
-				},
-				onbeforeupdate(vnode) {
-					const old = this[OLD]
-					old.attrs = this.attrs
-					old.children = this.children
-					assignAttrs(this, vnode)
-					onbeforeupdate.call(this, old)
-				},
-				onupdate(vnode) {
-					const old = this[OLD]
-					old.dom = this.dom
-					this.dom = vnode.dom
-					onupdate.call(this, old)
-				},
-				onremove() {
-					onremove.call(this)
-					delete this.dom
-				}
-			})
-		}
-	})
-})()
+        comp(props) {
+            var {
+                oninit = NOOP,
+                oncreate = NOOP,
+                onbeforeupdate = NOOP,
+                onupdate = NOOP,
+                onremove = NOOP
+            } = props;
+            return {
+                ...props,
+                oninit(vnode) {
+                    m.bind(this);
+                    assignAttrs(this, vnode);
+                    oninit.call(this);
+                    onbeforeupdate.call(this);
+                },
+                oncreate(vnode) {
+                    this.dom = vnode.dom;
+                    oncreate.call(this);
+                    onupdate.call(this);
+                    this[OLD] = { dom: this.dom };
+                },
+                onbeforeupdate(vnode) {
+                    var old = this[OLD];
+                    old.attrs = this.attrs;
+                    old.children = this.children;
+                    assignAttrs(this, vnode);
+                    onbeforeupdate.call(this, old);
+                },
+                onupdate(vnode) {
+                    var old = this[OLD];
+                    old.dom = this.dom;
+                    this.dom = vnode.dom;
+                    onupdate.call(this, old);
+                },
+                onremove() {
+                    onremove.call(this);
+                    delete this.dom;
+                }
+            };
+        }
+    });
+})();

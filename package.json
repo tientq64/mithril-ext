@@ -1,14 +1,14 @@
 {
-  "name": "mithril-ext",
-  "version": "2.2.0",
-  "description": "Extended for Mithril.js",
-  "main": "mithril-ext.min.js",
-  "scripts": {
-    "build": "terser mithril-ext.js -cmo mithril-ext.min.js"
-  },
-  "devDependencies": {
-    "terser": ">=5.6.1"
-  },
-  "author": "tiencoffee",
-  "license": "MIT"
+	"name": "mithril-ext",
+	"version": "2.3.0",
+	"description": "Expands features for Mithril.js",
+	"main": "mithril-ext.min.js",
+	"scripts": {
+		"build": "terser mithril-ext.js -cmo mithril-ext.min.js"
+	},
+	"devDependencies": {
+		"terser": ">=5.6.1"
+	},
+	"author": "tiencoffee",
+	"license": "MIT"
 }
